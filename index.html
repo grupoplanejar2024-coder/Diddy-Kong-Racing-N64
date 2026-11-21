@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Diddy Kong Racing - Kubo Touch</title>
+    <style>
+        * { box-sizing: border-box; }
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            width: 100%; 
+            min-height: 100%; 
+            background-color: #121212; 
+            color: #fff; 
+            font-family: Arial, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            overflow-x: hidden; 
+        }
+        
+        header { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            text-align: center; 
+            padding: 15px; 
+            background: #1e1e1e; 
+            z-index: 5; 
+        }
+        
+        .badge { 
+            background: #333333; 
+            color: #fff; 
+            padding: 4px 12px; 
+            border-radius: 20px; 
+            font-weight: bold; 
+            font-size: 14px; 
+            border: 1px solid #555; 
+        }
+        
+        #game-card { 
+            width: 100%;
+            max-width: 440px; 
+            margin: 80px 20px 20px 20px; 
+            background: #1e1e1e; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7); 
+            perspective: 1000px;
+        }
+        
+        /* Container 3D Interativo */
+        .cartridge-wrapper {
+            width: 100%;
+            padding: 25px 10px 15px 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+            cursor: pointer;
+        }
+
+        /* Cartucho Nintendo 64 */
+        .n64-cart-body {
+            width: 310px;
+            height: 222px;
+            position: relative;
+            background: linear-gradient(180deg, #9d9ca4 0%, #83828a 55%, #75747c 100%);
+            border-radius: 56px 56px 6px 6px;
+            box-shadow: 
+                inset 0 3px 5px rgba(255,255,255,0.5),
+                inset 0 -5px 8px rgba(0,0,0,0.45),
+                inset 4px 0 6px rgba(255,255,255,0.25),
+                inset -4px 0 6px rgba(0,0,0,0.35);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 18px 26px 10px 26px;
+            transform: translateZ(20px);
+            filter: drop-shadow(0 15px 22px rgba(0,0,0,0.75));
+        }
+
+        /* Ranhuras laterais características do cartucho N64 */
+        .n64-side-grip {
+            position: absolute;
+            bottom: 8px;
+            width: 18px;
+            height: 112px;
+            background: linear-gradient(180deg, #77767e 0%, #68676f 100%);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.45);
+        }
+
+        .n64-side-grip.left {
+            left: 0;
+            border-radius: 0 4px 0 6px;
+            border-right: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .n64-side-grip.right {
+            right: 0;
+            border-radius: 4px 0 6px 0;
+            border-left: 1px solid rgba(0,0,0,0.3);
+        }
+
+        /* Cavidade central do adesivo (Label N64) */
+        .n64-label-recess {
+            width: 188px;
+            height: 158px;
+            padding: 3px;
+            background: #67666e;
+            border-radius: 22px 22px 6px 6px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.6), 0 1px 1px rgba(255,255,255,0.35);
+            display: flex;
+            z-index: 2;
+        }
+
+        .n64-label-sticker {
+            width: 100%;
+            height: 100%;
+            border-radius: 19px 19px 4px 4px;
+            overflow: hidden;
+            position: relative;
+            background: #2b6cb0;
+        }
+
+        .n64-label-sticker img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            image-rendering: -webkit-optimize-contrast;
+            filter: contrast(1.04) saturate(1.06);
+            backface-visibility: hidden;
+            display: block;
+        }
+
+        /* Reflexo sutil no adesivo ao passar o mouse / tocar */
+        .n64-label-sticker::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -120%;
+            width: 65%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+            transform: skewX(-25deg);
+            transition: left 0.6s ease;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .n64-cart-body:hover .n64-label-sticker::after {
+            left: 160%;
+        }
+
+        /* Logotipo Nintendo gravado na base do cartucho */
+        .n64-bottom-brand {
+            margin-top: 8px;
+            padding: 1px 12px;
+            border: 1.5px solid #65646c;
+            border-radius: 10px;
+            box-shadow: inset 0 1px 1px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.35);
+            z-index: 2;
+        }
+
+        .n64-bottom-brand span {
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 0.6px;
+            color: #63626a;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.4), 0 -1px 0 rgba(0,0,0,0.35);
+            display: block;
+        }
+
+        .content { padding: 20px; }
+        h1 { margin: 0 0 10px 0; font-size: 22px; color: #e5e5e5; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .meta-info { display: flex; gap: 10px; margin-bottom: 15px; font-size: 13px; color: #aaa; }
+        .description { font-size: 14px; line-height: 1.5; color: #ddd; margin-bottom: 15px; }
+        .details { font-size: 13px; color: #bbb; margin-bottom: 20px; }
+        .details ul { padding-left: 20px; margin: 0; }
+        
+        .btn-play { 
+            display: block; 
+            width: 100%; 
+            padding: 16px; 
+            background: #2b2b2b; 
+            color: #fff; 
+            border: 1px solid #555; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 18px; 
+            cursor: pointer; 
+            text-align: center; 
+            outline: none;
+            position: relative;
+            z-index: 10;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn-play:hover { background: #3b3b3b; transform: translateY(-2px); }
+        .btn-play:active { background: #1f1f1f; transform: translateY(0); }
+
+        #game-container { 
+            display: none; 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%; 
+            height: 100%; 
+            z-index: 99999;
+            background: #000;
+        }
+        #game { width: 100%; height: 100%; }
+
+        /* Responsividade para telas de celulares menores */
+        @media (max-width: 400px) {
+            .n64-cart-body {
+                transform: scale(0.88) translateZ(20px);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header id="header-bar">
+        <span class="badge">KUBO TOUCH</span>
+    </header>
+
+    <div id="game-card">
+        <!-- Cartucho Nintendo 64 3D -->
+        <div class="cartridge-wrapper" id="cartridge3d">
+            <div class="n64-cart-body">
+                <div class="n64-side-grip left"></div>
+                <div class="n64-side-grip right"></div>
+
+                <!-- Cavidade e Adesivo do Cartucho -->
+                <div class="n64-label-recess">
+                    <div class="n64-label-sticker">
+                        <img src="n64_dkracingpc_label_au.jpg" alt="Capa Diddy Kong Racing">
+                    </div>
+                </div>
+
+                <!-- Logotipo Nintendo na base -->
+                <div class="n64-bottom-brand">
+                    <span>Nintendo</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <h1>Diddy Kong Racing</h1>
+            
+            <div class="meta-info">
+                <span>🎮 1-4 Jogadores</span>
+                <span>📅 1997</span>
+                <span>🕹️ Nintendo 64</span>
+            </div>
+
+            <p class="description">
+                Junte-se a Diddy Kong e seus amigos para salvar a Ilha Timber do malvado feiticeiro intergaláctico Wizpig! Pilote carros, hovercrafts e aviões em pistas cheias de segredos, chefes desafiadores e muita velocidade.
+            </p>
+
+            <div class="details">
+                <ul>
+                    <li><strong>🕹️ Gênero:</strong> Corrida / Aventura</li>
+                </ul>
+            </div>
+
+            <button id="play-btn" class="btn-play">JOGAR AGORA</button>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <div id="game"></div>
+    </div>
+
+    <script type="text/javascript">
+        // Efeito 3D interativo
+        const card = document.getElementById('game-card');
+        const cartridge = document.getElementById('cartridge3d');
+
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+            
+            const rotateX = (-y / 14).toFixed(2);
+            const rotateY = (x / 14).toFixed(2);
+            
+            cartridge.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+        });
+
+        card.addEventListener('mouseleave', () => {
+            cartridge.style.transform = `rotateX(0deg) rotateY(0deg) scale(1)`;
+            cartridge.style.transition = 'transform 0.5s ease';
+        });
+
+        card.addEventListener('mouseenter', () => {
+            cartridge.style.transition = 'none';
+        });
+
+        // Inicialização do Emulador
+        document.getElementById('play-btn').addEventListener('click', function() {
+            document.getElementById('header-bar').style.display = 'none';
+            document.getElementById('game-card').style.display = 'none';
+            
+            var container = document.getElementById('game-container');
+            container.style.display = 'block';
+
+            window.EJS_player = '#game';
+            window.EJS_core = 'n64';
+            window.EJS_gameName = "Diddy Kong Racing";
+            window.EJS_color = '#e63946';
+            window.EJS_startOnLoaded = true;
+            window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
+            window.EJS_gameUrl = 'Diddy%20Kong%20Racing%20%28USA%29%20%28En%2CFr%29%20%28Rev%201%29.z64';
+
+            var script = document.createElement('script');
+            script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
+            script.async = true;
+            document.body.appendChild(script);
+        });
+    </script>
+</body>
+</html>
